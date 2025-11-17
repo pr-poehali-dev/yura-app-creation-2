@@ -52,7 +52,7 @@ const Index = () => {
                 Пробное занятие БЕСПЛАТНО
               </Button>
               <Button size="lg" variant="outline" className="border-2 border-primary hover:bg-primary/10 text-lg px-8">
-                Наш Instagram
+                Наш Telegram
               </Button>
             </div>
           </div>
@@ -290,8 +290,8 @@ const Index = () => {
           
           <div className="text-center mt-8">
             <Button variant="outline" size="lg" className="border-2 border-primary hover:bg-primary/10">
-              <Icon name="Instagram" className="mr-2" size={20} />
-              Больше фото в Instagram
+              <Icon name="Send" className="mr-2" size={20} />
+              Больше фото в Telegram
             </Button>
           </div>
         </div>
@@ -459,7 +459,7 @@ const Index = () => {
           <p className="mb-6 opacity-90">Танцуй, чувствуй, живи полной жизнью!</p>
           <div className="flex justify-center gap-6 mb-6">
             <a href="#" className="hover:scale-110 transition-transform">
-              <Icon name="Instagram" size={28} />
+              <Icon name="Send" size={28} />
             </a>
             <a href="#" className="hover:scale-110 transition-transform">
               <Icon name="Youtube" size={28} />
