@@ -1,0 +1,20 @@
+{
+  "tests": [
+    {
+      "name": "Get all quizzes",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 200,
+      "expectedBody": {"quizzes": []},
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Get quiz by id",
+      "method": "GET",
+      "path": "/?quiz_id=1",
+      "expectedStatus": 200,
+      "expectedBody": {"questions": []},
+      "bodyMatcher": "partial"
+    }
+  ]
+}

@@ -20,7 +20,8 @@ export default {
 		extend: {
 			fontFamily: {
 				montserrat: ['Montserrat', 'sans-serif'],
-				rubik: ['Rubik', 'sans-serif']
+				rubik: ['Rubik', 'sans-serif'],
+				chewy: ['Chewy', 'cursive']
 			},
 			colors: {
 				border: 'hsl(var(--border))',

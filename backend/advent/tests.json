@@ -1,0 +1,12 @@
+{
+  "tests": [
+    {
+      "name": "Get advent cells",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 200,
+      "expectedBody": {"cells": []},
+      "bodyMatcher": "partial"
+    }
+  ]
+}
