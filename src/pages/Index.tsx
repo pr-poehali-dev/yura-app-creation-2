@@ -1,279 +1,232 @@
-import { useState, useEffect } from "react";
-import AdventCell from "@/components/AdventCell";
-import PollBlock from "@/components/PollBlock";
-import CommentsBlock from "@/components/CommentsBlock";
-import GalleryBlock from "@/components/GalleryBlock";
-import { getAdventCells } from "@/lib/api";
+import { useState } from "react";
+import AdventCalendar from "@/components/AdventCalendar";
+import Icon from "@/components/ui/icon";
 
-const SEASONS = [
-  { key: "all", label: "Все", emoji: "🎄" },
-  { key: "winter", label: "Зима", emoji: "❄️" },
-  { key: "spring", label: "Весна", emoji: "🌸" },
-  { key: "summer", label: "Лето", emoji: "☀️" },
-  { key: "autumn", label: "Осень", emoji: "🍂" },
+const PRIZES = [
+  { icon: "🚗", label: "Автомобильные ключи", color: "#FFD700" },
+  { icon: "💵", label: "Денежные призы", color: "#4CAF50" },
+  { icon: "📱", label: "Смартфоны", color: "#2196F3" },
+  { icon: "👕", label: "Мерч Авторадио", color: "#E91E63" },
 ];
 
-const SEASON_BG: Record<string, string> = {
-  winter: "from-blue-950 via-indigo-900 to-blue-900",
-  spring: "from-pink-950 via-rose-900 to-pink-800",
-  summer: "from-yellow-900 via-orange-900 to-amber-800",
-  autumn: "from-orange-950 via-red-900 to-orange-900",
-  all: "from-slate-950 via-blue-950 to-indigo-950",
-};
-
-const SNOWFLAKES = ["❄", "✦", "✧", "⋆", "❅", "✼"];
-
-function FloatingSnow({ count = 20 }: { count?: number }) {
-  return (
-    <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
-      {Array.from({ length: count }).map((_, i) => (
-        <span
-          key={i}
-          className="absolute text-white/20 animate-bounce select-none"
-          style={{
-            left: `${(i * 37 + 13) % 100}%`,
-            top: `${(i * 53 + 7) % 100}%`,
-            fontSize: `${12 + (i % 4) * 6}px`,
-            animationDelay: `${(i * 0.4) % 3}s`,
-            animationDuration: `${2 + (i % 3)}s`,
-          }}
-        >
-          {SNOWFLAKES[i % SNOWFLAKES.length]}
-        </span>
-      ))}
-    </div>
-  );
-}
-
 export default function Index() {
-  const [cells, setCells] = useState<Record<string, unknown>[]>([]);
-  const [activeSeason, setActiveSeason] = useState("all");
-  const [activeSection, setActiveSection] = useState("advent");
-
-  useEffect(() => {
-    getAdventCells().then((data) => setCells(data.cells || []));
-  }, []);
-
-  const bg = SEASON_BG[activeSeason] || SEASON_BG.all;
+  const [openDoor, setOpenDoor] = useState<number | null>(null);
 
   return (
-    <div className={`min-h-screen bg-gradient-to-br ${bg} text-foreground transition-all duration-700`}>
-      <FloatingSnow count={25} />
+    <div className="min-h-screen overflow-x-hidden">
+      {/* HERO — полноэкранный с референсным фоном */}
+      <section className="relative min-h-screen flex flex-col items-center justify-center">
+        {/* Фон — 4 сезона */}
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{
+            backgroundImage: `url('https://cdn.poehali.dev/projects/20b202c7-ed4d-41ec-a6e2-2114bd171b51/bucket/715d6499-bc05-47bf-be3d-8c1b5fca7a77.png')`,
+            backgroundSize: "cover",
+            backgroundPosition: "center top",
+          }}
+        />
+        {/* Затемняющий градиент снизу */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/80" />
 
-      {/* HERO */}
-      <header className="relative z-10 overflow-hidden">
-        <div className="container mx-auto px-4 py-8 md:py-12 text-center">
-          <div className="mb-6">
-            <span className="inline-block bg-red-600/30 border border-red-400/40 text-yellow-200 px-4 py-1 rounded-full text-sm font-medium mb-4">
-              📻 Акция радиостанции
-            </span>
-            <h1
-              className="text-5xl md:text-7xl font-bold mb-3 leading-tight"
-              style={{ fontFamily: "'Chewy', cursive", letterSpacing: "0.02em" }}
-            >
-              <span className="text-yellow-300 drop-shadow-[0_0_20px_rgba(253,224,71,0.5)]">Новый год</span>
-              <br />
-              <span className="text-white">круглый год</span>
-            </h1>
-            <p className="text-blue-200 text-lg md:text-xl max-w-xl mx-auto">
-              Открывай окошки адвент-календаря, участвуй в викторинах, голосуй и делись фото!
-            </p>
-          </div>
-
-          {/* Дед Мороз в кабриолете */}
-          <div className="relative max-w-3xl mx-auto mb-8">
-            <img
-              src="https://cdn.poehali.dev/projects/20b202c7-ed4d-41ec-a6e2-2114bd171b51/files/cb25d011-ae2a-41ae-9e21-392960ff9842.jpg"
-              alt="Дед Мороз в кабриолете"
-              className="w-full rounded-3xl border-2 border-yellow-400/40 shadow-2xl shadow-yellow-400/10 object-cover max-h-72"
-            />
-            <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 bg-red-600 text-white px-6 py-2 rounded-full font-bold shadow-lg whitespace-nowrap">
-              🎅 Дед Мороз уже едет!
-            </div>
-          </div>
-
-          {/* Фильтр сезонов */}
-          <div className="mt-10 flex flex-wrap justify-center gap-3">
-            {SEASONS.map((s) => (
-              <button
-                key={s.key}
-                onClick={() => setActiveSeason(s.key)}
-                className={`px-5 py-2 rounded-full font-medium transition-all duration-300 border text-sm ${
-                  activeSeason === s.key
-                    ? "bg-yellow-400 text-yellow-900 border-yellow-400 scale-105 shadow-lg shadow-yellow-400/30"
-                    : "bg-white/10 border-white/20 text-white hover:bg-white/20"
-                }`}
+        {/* ЛОГОТИП АВТОРАДИО вверху */}
+        <div className="relative z-10 flex flex-col items-center pt-10 pb-0 w-full">
+          <div className="flex items-center gap-3 bg-white/95 rounded-2xl px-6 py-3 shadow-2xl mb-8">
+            <div className="flex flex-col items-center leading-none">
+              <span
+                className="text-3xl md:text-4xl font-black text-[#1a3fa8] leading-none tracking-tight"
+                style={{ fontFamily: "Montserrat, sans-serif" }}
               >
-                {s.emoji} {s.label}
-              </button>
-            ))}
-          </div>
-        </div>
-      </header>
-
-      {/* NAVIGATION */}
-      <nav className="sticky top-0 z-20 bg-black/40 backdrop-blur-md border-b border-white/10">
-        <div className="container mx-auto px-4">
-          <div className="flex overflow-x-auto gap-1 py-3">
-            {[
-              { key: "advent", label: "🎄 Календарь" },
-              { key: "poll", label: "🗳️ Голосование" },
-              { key: "gallery", label: "📸 Галерея" },
-              { key: "comments", label: "💬 Комментарии" },
-            ].map((item) => (
-              <button
-                key={item.key}
-                onClick={() => setActiveSection(item.key)}
-                className={`flex-none px-4 py-2 rounded-xl font-medium text-sm transition-all whitespace-nowrap ${
-                  activeSection === item.key
-                    ? "bg-red-600 text-white"
-                    : "text-white/70 hover:text-white hover:bg-white/10"
-                }`}
-              >
-                {item.label}
-              </button>
-            ))}
-          </div>
-        </div>
-      </nav>
-
-      <main className="relative z-10 container mx-auto px-4 py-10 space-y-16">
-
-        {/* АДВЕНТ-КАЛЕНДАРЬ */}
-        {activeSection === "advent" && (
-          <section>
-            <div className="text-center mb-8">
-              <h2
-                className="text-4xl md:text-5xl font-bold text-yellow-300 mb-2"
-                style={{ fontFamily: "'Chewy', cursive" }}
-              >
-                🎄 Адвент-календарь
-              </h2>
-              <p className="text-blue-200">24 окошка с сюрпризами, викторинами и подарками от радиостанции</p>
-            </div>
-
-            {/* Времена года */}
-            <div className="max-w-2xl mx-auto mb-10">
-              <img
-                src="https://cdn.poehali.dev/projects/20b202c7-ed4d-41ec-a6e2-2114bd171b51/files/a5517905-792f-489d-9573-1085819b8b20.jpg"
-                alt="Все времена года"
-                className="w-full rounded-2xl border border-white/20 shadow-xl"
-              />
-            </div>
-
-            {cells.length === 0 ? (
-              <div className="text-center py-16 text-white/50">
-                <div className="text-6xl mb-4">🎁</div>
-                <p>Загружаю календарь...</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3 max-w-4xl mx-auto">
-                {cells.map((cell) => (
-                  <AdventCell key={cell.cell_number} cell={cell} />
-                ))}
-              </div>
-            )}
-
-            <div className="text-center mt-8">
-              <div className="inline-flex items-center gap-6 bg-white/10 rounded-2xl px-8 py-4 border border-white/20">
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-yellow-300">{cells.filter((c) => Boolean(c.is_unlocked)).length}</div>
-                  <div className="text-xs text-white/60">открыто</div>
-                </div>
-                <div className="w-px h-10 bg-white/20" />
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-white">{cells.length}</div>
-                  <div className="text-xs text-white/60">всего</div>
-                </div>
-              </div>
-            </div>
-          </section>
-        )}
-
-        {/* ГОЛОСОВАНИЕ */}
-        {activeSection === "poll" && (
-          <section className="max-w-xl mx-auto">
-            <div className="text-center mb-8">
-              <h2
-                className="text-4xl font-bold text-yellow-300 mb-2"
-                style={{ fontFamily: "'Chewy', cursive" }}
-              >
-                🗳️ Голосование
-              </h2>
-              <p className="text-blue-200">Твой голос влияет на наш эфир!</p>
-            </div>
-            <div className="space-y-6">
-              {[1, 2, 3].map((pollId) => (
-                <div key={pollId} className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
-                  <PollBlock pollId={pollId} />
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* ГАЛЕРЕЯ */}
-        {activeSection === "gallery" && (
-          <section>
-            <div className="text-center mb-8">
-              <h2
-                className="text-4xl font-bold text-yellow-300 mb-2"
-                style={{ fontFamily: "'Chewy', cursive" }}
-              >
-                📸 Фотогалерея
-              </h2>
-              <p className="text-blue-200">Фотографии слушателей со всех времён года</p>
-            </div>
-            <div className="bg-white/5 backdrop-blur-sm rounded-3xl p-6 border border-white/10">
-              <GalleryBlock season={activeSeason !== "all" ? activeSeason : undefined} />
-            </div>
-          </section>
-        )}
-
-        {/* КОММЕНТАРИИ */}
-        {activeSection === "comments" && (
-          <section className="max-w-2xl mx-auto">
-            <div className="text-center mb-8">
-              <h2
-                className="text-4xl font-bold text-yellow-300 mb-2"
-                style={{ fontFamily: "'Chewy', cursive" }}
-              >
-                💬 Комментарии
-              </h2>
-              <p className="text-blue-200">Общайтесь, делитесь пожеланиями!</p>
-            </div>
-            <div className="bg-white/5 backdrop-blur-sm rounded-3xl p-6 border border-white/10">
-              <CommentsBlock season={activeSeason !== "all" ? activeSeason : undefined} />
-            </div>
-          </section>
-        )}
-
-      </main>
-
-      {/* FOOTER */}
-      <footer className="relative z-10 mt-20 border-t border-white/10 bg-black/30 backdrop-blur-sm">
-        <div className="container mx-auto px-4 py-10 text-center">
-          <img
-            src="https://cdn.poehali.dev/projects/20b202c7-ed4d-41ec-a6e2-2114bd171b51/files/1f02be02-38d9-471c-a1ee-03c4213489f6.jpg"
-            alt="Адвент дверь"
-            className="w-20 h-20 mx-auto rounded-2xl object-cover border border-white/20 mb-4"
-          />
-          <h3
-            className="text-2xl font-bold text-yellow-300 mb-2"
-            style={{ fontFamily: "'Chewy', cursive" }}
-          >
-            Новый год круглый год
-          </h3>
-          <p className="text-white/60 text-sm mb-6">Твоя любимая радиостанция — с тобой в любое время года!</p>
-          <div className="flex justify-center gap-6">
-            {["❄️", "🌸", "☀️", "🍂"].map((emoji, i) => (
-              <span key={i} className="text-2xl hover:scale-125 transition-transform cursor-default select-none">
-                {emoji}
+                АВТО
               </span>
+              <span
+                className="text-3xl md:text-4xl font-black text-[#1a3fa8] leading-none tracking-tight"
+                style={{ fontFamily: "Montserrat, sans-serif" }}
+              >
+                РАДИО
+              </span>
+            </div>
+            <div className="flex flex-col gap-1">
+              <div className="w-10 h-1.5 rounded-full bg-[#1a3fa8]" />
+              <div className="flex items-center gap-1">
+                <div className="w-5 h-5 rounded-full border-2 border-[#1a3fa8] flex items-center justify-center">
+                  <div className="w-2 h-2 rounded-full bg-[#1a3fa8]" />
+                </div>
+                <div className="w-5 h-1.5 rounded-full bg-[#1a3fa8]" />
+              </div>
+              <div className="w-8 h-1.5 rounded-full bg-[#1a3fa8]" />
+            </div>
+          </div>
+        </div>
+
+        {/* ЗАГОЛОВОК */}
+        <div className="relative z-10 text-center px-4 mt-auto mb-8">
+          <h1
+            className="text-5xl md:text-7xl lg:text-8xl font-black text-white drop-shadow-2xl leading-none mb-4"
+            style={{ fontFamily: "Chewy, cursive", letterSpacing: "0.03em", textShadow: "0 4px 30px rgba(0,0,0,0.8)" }}
+          >
+            <span className="text-[#FFD700]">НОВЫЙ ГОД</span>
+            <br />
+            <span className="text-white">КРУГЛЫЙ ГОД!</span>
+          </h1>
+          <p className="text-white/90 text-xl md:text-2xl font-medium drop-shadow-lg mb-6 max-w-lg mx-auto">
+            Открывай двери, выигрывай призы каждый месяц!
+          </p>
+          <a
+            href="#calendar"
+            className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-500 text-white font-bold text-lg px-8 py-4 rounded-full shadow-2xl transition-all hover:scale-105 active:scale-95"
+            style={{ boxShadow: "0 0 40px rgba(220,38,38,0.5)" }}
+          >
+            <Icon name="Gift" size={22} />
+            Открыть календарь
+          </a>
+        </div>
+
+        {/* Прокрутка вниз */}
+        <div className="relative z-10 mb-8 animate-bounce">
+          <Icon name="ChevronDown" size={36} className="text-white/60" />
+        </div>
+      </section>
+
+      {/* ПРИЗЫ */}
+      <section className="bg-[#0d1b3e] py-12 px-4">
+        <div className="max-w-4xl mx-auto">
+          <h2
+            className="text-center text-3xl md:text-4xl font-black text-white mb-2"
+            style={{ fontFamily: "Chewy, cursive" }}
+          >
+            🎁 Что можно выиграть?
+          </h2>
+          <p className="text-center text-blue-300 mb-8">Каждый месяц новые призы — слушай и участвуй!</p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {PRIZES.map((prize) => (
+              <div
+                key={prize.label}
+                className="flex flex-col items-center gap-3 bg-white/10 rounded-2xl p-5 border border-white/20 hover:bg-white/15 transition-all hover:scale-105"
+              >
+                <span className="text-5xl">{prize.icon}</span>
+                <span className="text-white font-semibold text-center text-sm">{prize.label}</span>
+              </div>
             ))}
           </div>
-          <p className="text-white/30 text-xs mt-6">© 2025 Радиостанция. Акция «Новый год круглый год»</p>
         </div>
+      </section>
+
+      {/* АДВЕНТ-КАЛЕНДАРЬ */}
+      <section id="calendar" className="bg-gradient-to-b from-[#0d1b3e] to-[#1a0a2e] py-16 px-4">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-10">
+            <h2
+              className="text-4xl md:text-5xl font-black text-[#FFD700] mb-3"
+              style={{ fontFamily: "Chewy, cursive" }}
+            >
+              🗓 Адвент-календарь
+            </h2>
+            <p className="text-blue-300 text-lg">12 дверей — 12 месяцев сюрпризов</p>
+          </div>
+          <AdventCalendar openDoor={openDoor} setOpenDoor={setOpenDoor} />
+        </div>
+      </section>
+
+      {/* КАК УЧАСТВОВАТЬ */}
+      <section className="bg-[#0d1b3e] py-16 px-4 border-t border-white/10">
+        <div className="max-w-4xl mx-auto">
+          <h2
+            className="text-center text-3xl md:text-4xl font-black text-white mb-10"
+            style={{ fontFamily: "Chewy, cursive" }}
+          >
+            🚀 Как участвовать?
+          </h2>
+          <div className="grid md:grid-cols-3 gap-6">
+            {[
+              { step: "1", title: "Слушай Авторадио", desc: "Включай нас на волне или в приложении каждый день", icon: "Radio" },
+              { step: "2", title: "Открывай двери", desc: "Каждый месяц новая дверь календаря с заданием и призом", icon: "DoorOpen" },
+              { step: "3", title: "Получай призы", desc: "Выполняй задания и выигрывай крутые подарки от Авторадио", icon: "Trophy" },
+            ].map((item) => (
+              <div
+                key={item.step}
+                className="relative bg-white/10 rounded-2xl p-6 border border-white/20 text-center hover:bg-white/15 transition-all"
+              >
+                <div className="w-12 h-12 bg-red-600 rounded-full flex items-center justify-center text-white font-black text-xl mx-auto mb-4 shadow-lg">
+                  {item.step}
+                </div>
+                <Icon name={item.icon} size={32} className="text-[#FFD700] mx-auto mb-3" />
+                <h3 className="text-white font-bold text-lg mb-2">{item.title}</h3>
+                <p className="text-blue-300 text-sm">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ДЕД МОРОЗ В КАБРИОЛЕТЕ — финальный баннер */}
+      <section className="relative overflow-hidden py-16 px-4 bg-gradient-to-r from-red-900 via-red-700 to-red-900">
+        <div className="absolute inset-0 opacity-20">
+          {Array.from({ length: 30 }).map((_, i) => (
+            <span
+              key={i}
+              className="absolute text-white select-none"
+              style={{
+                left: `${(i * 37 + 13) % 100}%`,
+                top: `${(i * 53 + 7) % 100}%`,
+                fontSize: `${10 + (i % 4) * 8}px`,
+                opacity: 0.3 + (i % 3) * 0.2,
+              }}
+            >
+              {["❄", "✦", "⋆", "❅", "✼"][i % 5]}
+            </span>
+          ))}
+        </div>
+        <div className="relative z-10 max-w-4xl mx-auto flex flex-col md:flex-row items-center gap-8">
+          <div className="flex-1 text-center md:text-left">
+            <h2
+              className="text-4xl md:text-5xl font-black text-[#FFD700] mb-4 leading-tight"
+              style={{ fontFamily: "Chewy, cursive" }}
+            >
+              Дед Мороз уже едет!
+            </h2>
+            <p className="text-white/90 text-lg mb-6">
+              Каждый месяц он привозит новые призы слушателям Авторадио. Не пропусти свой подарок!
+            </p>
+            <div className="flex flex-wrap gap-3 justify-center md:justify-start">
+              <a
+                href="#calendar"
+                className="inline-flex items-center gap-2 bg-white text-red-700 font-bold px-6 py-3 rounded-full hover:bg-yellow-300 transition-all hover:scale-105"
+              >
+                <Icon name="Gift" size={18} />
+                Участвовать
+              </a>
+              <a
+                href="https://avtoradio.ru"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 bg-transparent border-2 border-white text-white font-bold px-6 py-3 rounded-full hover:bg-white/20 transition-all"
+              >
+                <Icon name="Radio" size={18} />
+                avtoradio.ru
+              </a>
+            </div>
+          </div>
+          <div className="flex-shrink-0">
+            <img
+              src="https://cdn.poehali.dev/projects/20b202c7-ed4d-41ec-a6e2-2114bd171b51/bucket/715d6499-bc05-47bf-be3d-8c1b5fca7a77.png"
+              alt="Авторадио"
+              className="w-64 h-64 object-cover rounded-2xl shadow-2xl border-4 border-white/30"
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* ФУТЕР */}
+      <footer className="bg-[#060d1f] py-8 px-4 text-center border-t border-white/10">
+        <div className="flex items-center justify-center gap-3 mb-3">
+          <span
+            className="text-[#1a3fa8] bg-white rounded-lg px-3 py-1 font-black text-lg"
+            style={{ fontFamily: "Montserrat, sans-serif" }}
+          >
+            АВТО РАДИО
+          </span>
+        </div>
+        <p className="text-white/40 text-sm">© 2025 Авторадио. Новый год круглый год.</p>
       </footer>
     </div>
   );
